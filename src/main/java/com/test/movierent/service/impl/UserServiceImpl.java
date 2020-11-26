@@ -154,6 +154,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return this.findOne(authentication.getName());
     }
 
+    @Override
+    public User save(User user) {
+        return userDao.save(user);
+    }
+
     private boolean emailExist(String email) {
         return userDao.existsByEmail(email);
     }
