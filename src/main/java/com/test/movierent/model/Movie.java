@@ -1,26 +1,16 @@
 package com.test.movierent.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Getter
 @Setter
@@ -29,7 +19,7 @@ public class Movie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "movies_seq_gen")
-    @SequenceGenerator(name = "movies_seq_gen", sequenceName = "movies_id_seq", initialValue = 10)
+    @SequenceGenerator(name = "movies_seq_gen", sequenceName = "movies_id_seq", initialValue = 10, allocationSize = 1)
     @Column(name = "movie_id")
     private Long id;
 
@@ -44,10 +34,10 @@ public class Movie {
     @Column(length = 100, nullable = false)
     private Integer stock;
 
-    @Column(name = "rental_price")
+    @Column(name = "rental_price", nullable = false)
     private BigDecimal rentalPrice;
 
-    @Column(name = "sale_price")
+    @Column(name = "sale_price", nullable = false)
     private BigDecimal salePrice;
 
     @Column(length = 100, nullable = false)

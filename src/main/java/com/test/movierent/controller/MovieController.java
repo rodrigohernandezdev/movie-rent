@@ -1,16 +1,16 @@
 package com.test.movierent.controller;
 
 
-import com.test.movierent.config.TokenProvider;
+import com.test.movierent.config.MessageProvider;
 import com.test.movierent.exception.NotCreatedException;
 import com.test.movierent.exception.NotExistException;
 import com.test.movierent.exception.ParameterException;
 import com.test.movierent.model.Movie;
-import com.test.movierent.model.MovieUserLiked;
-import com.test.movierent.model.dto.ErrorDto;
+import com.test.movierent.model.MovieUserRentBuy;
 import com.test.movierent.model.dto.MovieDto;
+import com.test.movierent.model.dto.MovieRentBuyResponse;
 import com.test.movierent.model.dto.MovieResponse;
-import com.test.movierent.service.LikeService;
+import com.test.movierent.service.UserMovieService;
 import com.test.movierent.service.MovieService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +34,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @RestController
@@ -50,17 +49,21 @@ public class MovieController {
     @Autowired
     private MovieService movieService;
 
-    @Value("${token.header}")
-    private String HEADER_STRING;
-
-    @Autowired
-    private TokenProvider jwtTokenUtil;
 
     @Value("${application.default-page-size}")
     private Integer DEFAULT_PAGE_SIZE;
 
     @Autowired
-    private LikeService likeService;
+    private UserMovieService userMovieService;
+
+    @Autowired
+    private MessageProvider messageProvider;
+
+    @Value("${application.default-days-rent-movie}")
+    private Integer DEFAULT_DAYS_RENT;
+
+    @Value("${application.default-pay-late-return}")
+    private Double DEFAULT_PAY_LATE;
 
     /** Create a new Movie
      * @param movie contains image property, this must be byte array
@@ -173,10 +176,55 @@ public class MovieController {
     @Secured({"ROLE_ADMIN", "ROLE_USER"})
     @PutMapping("/{movieID}/like")
     public ResponseEntity<?> likeMovie(@PathVariable("movieID") Long movieID){
-        likeService.like(movieID);
+        userMovieService.like(movieID);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+
+    // Rent a movie by any user
+    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    @PostMapping("/{movieID}/rent")
+    public ResponseEntity<?> rentMovie(@PathVariable("movieID") Long movieID, @RequestParam(name = "quantity") Integer quantity){
+        MovieUserRentBuy movieRent = userMovieService.rent(movieID, quantity);
+        logger.info("A movie was rent "+ movieRent.getMovie().getTittle() + " to time: " + movieRent.getRentDate());
+        MovieRentBuyResponse response = new MovieRentBuyResponse();
+        BeanUtils.copyProperties(movieRent, response);
+        response.setMessage(messageProvider.getWarningMovieRent());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Return a movie rental by any user
+    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    @PostMapping("/{movieID}/return")
+    public ResponseEntity<?> returnRentMovie(@PathVariable("movieID") Long movieID){
+        MovieUserRentBuy movieReturn = userMovieService.findByUserAndMovieId(movieID);
+        MovieRentBuyResponse response = new MovieRentBuyResponse();
+        BeanUtils.copyProperties(movieReturn, response);
+        response.setMessage("The movie was returned successfully");
+        if ( LocalDateTime.now().compareTo(movieReturn.getRentDate()) > DEFAULT_DAYS_RENT) {
+            movieReturn.setPayLateReturn(new BigDecimal(DEFAULT_PAY_LATE));
+            response.setPayLateReturn(new BigDecimal(DEFAULT_PAY_LATE));
+            response.setMessage("An payment was added for return late the movie");
+        }
+        userMovieService.returnMovie(movieReturn);
+        logger.info("A movie was returned "+ movieReturn.getMovie().getTittle() + " to time: " + LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Buy a movie by any user
+    @Secured({"ROLE_ADMIN", "ROLE_USER"})
+    @PostMapping("/{movieID}/buy")
+    public ResponseEntity<?> buyMovie(@PathVariable("movieID") Long movieID, @RequestParam(name = "quantity")  Integer quantity){
+        MovieUserRentBuy movieBuy = userMovieService.buy(movieID, quantity);
+        logger.info("A movie was buy "+ movieBuy.getMovie().getTittle() + " to time: " + movieBuy.getRentDate());
+        MovieRentBuyResponse response = new MovieRentBuyResponse();
+        BeanUtils.copyProperties(movieBuy, response);
+        response.setMessage(messageProvider.getMessageMovieBuy());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    // Wait for a param named {name} for realize a search
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam("name") String nameMovie ){
         Movie movie = movieService.findByNameMovie(nameMovie);

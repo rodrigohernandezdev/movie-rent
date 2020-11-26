@@ -43,5 +43,17 @@ public class MessageProvider {
     @Value("${error.not-exist}")
     private String notExist;
 
+    @Value("${error.movie-rent}")
+    private String movieRent;
+
+    @Value("${error.movie-buy}")
+    private String movieBuy;
+
+    @Value("${warning.movie-rent}")
+    private String warningMovieRent;
+
+    @Value("${message.movie-buy}")
+    private String messageMovieBuy;
+
 
 }

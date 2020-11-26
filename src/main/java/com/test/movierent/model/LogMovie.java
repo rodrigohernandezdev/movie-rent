@@ -21,7 +21,7 @@ public class LogMovie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "movies_log_seq_gen")
-    @SequenceGenerator(name = "movies_log_seq_gen", sequenceName = "movies_log_id_seq", initialValue = 1)
+    @SequenceGenerator(name = "movies_log_seq_gen", sequenceName = "movies_log_id_seq", initialValue = 10, allocationSize = 1)
     @Column(name = "movies_log_id")
     private Long id;
 

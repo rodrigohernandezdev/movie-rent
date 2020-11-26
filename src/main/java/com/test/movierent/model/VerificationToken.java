@@ -22,7 +22,7 @@ public class VerificationToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "token_seq_gen")
-    @SequenceGenerator(name = "token_seq_gen", sequenceName = "token_id_seq")
+    @SequenceGenerator(name = "token_seq_gen", sequenceName = "token_id_seq", initialValue = 10, allocationSize = 1)
     private Long id;
 
     @Column(unique = true)

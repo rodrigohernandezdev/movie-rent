@@ -142,4 +142,23 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    // Handler for custom UserMovieException
+    @ExceptionHandler(UserMovieException.class)
+    public ResponseEntity<ErrorDto> handleNotExistException(
+            UserMovieException ex) {
+        ErrorDto error = new ErrorDto();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.CONFLICT.value());
+        error.setError(ex.getMessage());
+
+        String message = "";
+        if (ex.getType() == 1){
+            message = messageProvider.getMovieRent();
+        }else if (ex.getType() == 2){
+            message = messageProvider.getMovieBuy();
+        }
+        error.setMessage(message);
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
 }

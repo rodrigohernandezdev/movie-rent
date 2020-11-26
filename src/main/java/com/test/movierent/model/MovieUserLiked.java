@@ -24,7 +24,7 @@ import javax.persistence.UniqueConstraint;
 public class MovieUserLiked {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "movies_user_liked_seq_gen")
-    @SequenceGenerator(name = "movies_user_liked_seq_gen", sequenceName = "movies_user_liked_id_seq", initialValue = 10)
+    @SequenceGenerator(name = "movies_user_liked_seq_gen", sequenceName = "movies_user_liked_id_seq", initialValue = 10, allocationSize = 1)
     @Column(name = "movies_user_liked_id")
     private Long id;
 
