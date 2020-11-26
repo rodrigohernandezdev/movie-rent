@@ -24,4 +24,6 @@ public interface UserService {
     VerificationToken getRecoveryToken(String VerificationToken);
     void saveRecoveryToken(VerificationToken verificationToken, String newPassword);
 
+    User getUserFromAuth();
+
 }

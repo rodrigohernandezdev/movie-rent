@@ -9,7 +9,9 @@ import com.test.movierent.model.VerificationToken;
 import com.test.movierent.model.dto.UserDto;
 import com.test.movierent.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -144,6 +146,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         user.setPassword(bcryptEncoder.encode(newPassword));
         userDao.save(user);
         tokenDao.save(verificationToken);
+    }
+
+    @Override
+    public User getUserFromAuth() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return this.findOne(authentication.getName());
     }
 
     private boolean emailExist(String email) {

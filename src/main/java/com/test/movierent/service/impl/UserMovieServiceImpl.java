@@ -5,17 +5,15 @@ import com.test.movierent.exception.NotExistException;
 import com.test.movierent.model.Movie;
 import com.test.movierent.model.MovieUserLiked;
 import com.test.movierent.model.User;
-import com.test.movierent.service.LikeService;
+import com.test.movierent.service.UserMovieService;
 import com.test.movierent.service.MovieService;
 import com.test.movierent.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LikeServiceImpl implements LikeService {
+public class UserMovieServiceImpl implements UserMovieService {
     @Autowired
     private MovieUserLikedDao movieLikeDao;
 
@@ -31,9 +29,7 @@ public class LikeServiceImpl implements LikeService {
      **/
     @Override
     public void like(Long movieId) throws NotExistException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userService.findOne(email);
+        User user = userService.getUserFromAuth();
         if (user == null){
             throw new NotExistException("Can not obtain the user for like movie");
         }
@@ -51,5 +47,15 @@ public class LikeServiceImpl implements LikeService {
             movie.setLikes(Integer.valueOf(movieLikeDao.countByMovieId(movie.getId()).toString()));
             movieService.save(movie);
         }
+    }
+
+    @Override
+    public Movie rent(Long movieId) {
+        User user = userService.getUserFromAuth();
+        if (user == null){
+            throw new NotExistException("Can not obtain the user for like movie");
+        }
+
+        return null;
     }
 }
