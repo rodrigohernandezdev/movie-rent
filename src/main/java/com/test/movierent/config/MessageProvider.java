@@ -40,5 +40,8 @@ public class MessageProvider {
     @Value("${error.forbidden}")
     private String forbidden;
 
+    @Value("${error.not-exist}")
+    private String notExist;
+
 
 }

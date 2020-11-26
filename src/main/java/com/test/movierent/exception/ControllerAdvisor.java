@@ -104,6 +104,7 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    // Handler for custom NotCreatedException for any object
     @ExceptionHandler(NotCreatedException.class)
     public ResponseEntity<ErrorDto> handleNotCreatedException(
             NotCreatedException ex) {
@@ -127,6 +128,18 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         error.setMessage(messageProvider.getForbidden());
 
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    // Handler for custom NotExistException for any object
+    @ExceptionHandler(NotExistException.class)
+    public ResponseEntity<ErrorDto> handleNotExistException(
+            NotExistException ex) {
+        ErrorDto error = new ErrorDto();
+        error.setTimestamp(LocalDateTime.now());
+        error.setStatus(HttpStatus.NOT_FOUND.value());
+        error.setError(ex.getMessage());
+        error.setMessage(messageProvider.getNotExist());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
 }
