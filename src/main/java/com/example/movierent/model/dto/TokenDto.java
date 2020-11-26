@@ -10,8 +10,7 @@ import lombok.Setter;
 public class TokenDto {
     @JsonProperty("access_token")
     private String token;
-    public TokenDto(){
-    }
+
     public TokenDto(String token){
         this.token = token;
     }

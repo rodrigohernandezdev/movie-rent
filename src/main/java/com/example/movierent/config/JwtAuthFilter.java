@@ -2,9 +2,12 @@ package com.example.movierent.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +23,8 @@ import java.io.IOException;
 
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
+
     @Autowired
     @Qualifier("userService")
     private UserDetailsService userDetailsService;
@@ -33,32 +38,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private String TOKEN_PREFIX;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest req, @NonNull HttpServletResponse res, @NonNull FilterChain chain) throws IOException, ServletException {
         String header = req.getHeader(HEADER_STRING);
-        String username = null;
+        String email = null;
         String authToken = null;
         if (header != null && header.startsWith(TOKEN_PREFIX)) {
             authToken = header.replace(TOKEN_PREFIX,"");
             try {
-                username = jwtTokenUtil.getUsernameFromToken(authToken);
+                email = jwtTokenUtil.getUsernameFromToken(authToken);
             } catch (IllegalArgumentException e) {
-                logger.error("an error occured during getting username from token", e);
+                logger.error("an error occurred during getting email from token", e);
             } catch (ExpiredJwtException e) {
                 logger.error("the token is expired and not valid anymore", e);
             } catch(SignatureException e){
-                logger.error("Authentication Failed. Username or Password not valid.", e);
+                logger.error("Authentication Failed. Email or Password not valid.", e);
             }
         } else {
             logger.warn("couldn't find bearer string, will ignore the header");
         }
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
             if (jwtTokenUtil.validateToken(authToken, userDetails)) {
-                UsernamePasswordAuthenticationToken authentication = jwtTokenUtil.getAuthentication(authToken, SecurityContextHolder.getContext().getAuthentication(), userDetails);
+                UsernamePasswordAuthenticationToken authentication = jwtTokenUtil.getAuthentication(authToken, userDetails);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
-                logger.info("authenticated user: " + username + ", setting security context");
+                logger.info("authenticated user: " + email + ", setting security context");
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

@@ -49,6 +49,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     CorsFilter corsFilter() {
         return new CorsFilter();
     }
+
+    /** Add filter for secured the endpoints
+     *  For permit an endpoint without authenticate:
+     *  add an antMatchers with the permitAll attribute.
+     **/
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.addFilterBefore(corsFilter(), SessionManagementFilter.class).csrf().disable().

@@ -19,6 +19,7 @@ public class CorsFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(CorsFilter.class);
 
+    // Add filter to allow use of Cors authorities
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         logger.info("Filtering CORS ...");
         HttpServletResponse response = (HttpServletResponse) res;

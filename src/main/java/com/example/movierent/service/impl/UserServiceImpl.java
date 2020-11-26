@@ -2,10 +2,12 @@ package com.example.movierent.service.impl;
 
 import com.example.movierent.dao.RoleDao;
 import com.example.movierent.dao.UserDao;
+import com.example.movierent.dao.VerificationTokenDao;
+import com.example.movierent.exception.UserAlreadyExistException;
 import com.example.movierent.model.User;
+import com.example.movierent.model.VerificationToken;
 import com.example.movierent.model.dto.UserDto;
 import com.example.movierent.service.UserService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,20 +31,34 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     private RoleDao roleDao;
 
     @Autowired
+    private VerificationTokenDao tokenDao;
+
+    @Autowired
     private BCryptPasswordEncoder bcryptEncoder;
 
+    /** Override this method from UserDetailsService.class for use the users in our db */
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDao.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userDao.findByEmail(email);
         if(user == null){
-            throw new UsernameNotFoundException("Invalid username or password.");
+            throw new UsernameNotFoundException("Invalid email or password.");
         }
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getAuthority(user));
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                user.getEnabled(),
+                true,
+                true,
+                true,
+                getAuthority(user)
+        );
     }
 
+    // Get a set of roles associated to the user
     private Set<SimpleGrantedAuthority> getAuthority(User user) {
         Set<SimpleGrantedAuthority> authorities = new HashSet<>();
         user.getRoles().forEach(role -> {
+            // Add prefix {ROLE_} to all roles
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
         });
         return authorities;
@@ -60,8 +76,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     @Override
-    public User findOne(String username) {
-        return userDao.findByUsername(username);
+    public User findOne(String email) {
+        return userDao.findByEmail(email);
     }
 
     @Override
@@ -70,11 +86,67 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     @Override
-    public User save(UserDto user) {
-        User newUser = new User();
-        user.setPassword(bcryptEncoder.encode(user.getPassword()));
-        BeanUtils.copyProperties(user,newUser);
-        newUser.addRole(roleDao.findByName("USER"));
-        return userDao.save(newUser);
+    public User register(UserDto userDto) throws UserAlreadyExistException {
+        if (emailExist(userDto.getEmail())) {
+            throw new UserAlreadyExistException("Email already exist");
+        }
+        User user = new User();
+        user.setEmail(userDto.getEmail());
+        user.setPassword(bcryptEncoder.encode(userDto.getPassword()));
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        user.setAge(userDto.getAge());
+
+        // Default disable the user for work with the confirmation email
+        user.setEnabled(false);
+
+        // Add User role for default to the user
+        //user.addRole(roleDao.findByName("USER"));
+        return userDao.save(user);
+    }
+
+    @Override
+    public void saveRegisteredUser(User user, VerificationToken verificationToken) {
+        user.addRole(roleDao.findByName("USER"));
+        userDao.save(user);
+        tokenDao.save(verificationToken);
+    }
+
+    @Override
+    public void createVerificationToken(User user, String token) {
+        // Type 1-Registration
+        VerificationToken myToken = new VerificationToken(token, user, 1);
+        tokenDao.save(myToken);
+    }
+
+    @Override
+    public VerificationToken getVerificationToken(String VerificationToken) {
+        // Type 1-Registration
+        return tokenDao.findByTokenAndType(VerificationToken, 1);
+    }
+
+    @Override
+    public void createRecoveryToken(User user, String token) {
+        // Type 2-Recovery
+        VerificationToken myToken = new VerificationToken(token, user, 2);
+        tokenDao.save(myToken);
+    }
+
+    @Override
+    public VerificationToken getRecoveryToken(String VerificationToken) {
+        // Type 2-Recovery
+        return tokenDao.findByTokenAndType(VerificationToken, 2);
+    }
+
+    @Override
+    public void saveRecoveryToken(VerificationToken verificationToken, String newPassword) {
+        User user = verificationToken.getUser();
+        user.setPassword(bcryptEncoder.encode(newPassword));
+        userDao.save(user);
+        tokenDao.save(verificationToken);
+    }
+
+    private boolean emailExist(String email) {
+        return userDao.existsByEmail(email);
     }
 }

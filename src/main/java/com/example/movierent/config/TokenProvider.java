@@ -20,6 +20,9 @@ import java.util.Date;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Util Class for work with jwt security
+ **/
 
 @Component
 public class TokenProvider implements Serializable {
@@ -27,11 +30,14 @@ public class TokenProvider implements Serializable {
     @Value("${token.signIngKey}")
     private String SIGNING_KEY;
 
-    @Value("${token.authoritieKey}")
+    @Value("${token.authoritiesKey}")
     private String AUTHORITIES_KEY;
 
     @Value("${token.validitySeconds}")
     private Long VALIDITY_SECONDS;
+
+    @Value("${token.emailKey}")
+    private String EMAIL_KEY;
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
@@ -58,6 +64,7 @@ public class TokenProvider implements Serializable {
         return expiration.before(new Date());
     }
 
+    // This method generate a SHA-256 token with the authentication information
     public String generateToken(Authentication authentication) {
         final String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -65,6 +72,7 @@ public class TokenProvider implements Serializable {
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
+                .claim(EMAIL_KEY, authentication.getName())
                 .signWith(SignatureAlgorithm.HS256, SIGNING_KEY)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setHeaderParam("typ", "JWT")
@@ -72,6 +80,7 @@ public class TokenProvider implements Serializable {
                 .compact();
     }
 
+    // Validate if the username of token is equals to the username logged
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (
@@ -79,7 +88,8 @@ public class TokenProvider implements Serializable {
                         && !isTokenExpired(token));
     }
 
-    UsernamePasswordAuthenticationToken getAuthentication(final String token, final Authentication existingAuth, final UserDetails userDetails) {
+    // Get authentication information from token
+    UsernamePasswordAuthenticationToken getAuthentication(final String token, final UserDetails userDetails) {
 
         final JwtParser jwtParser = Jwts.parser().setSigningKey(SIGNING_KEY);
 
