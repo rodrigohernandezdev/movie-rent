@@ -8,14 +8,14 @@
 		<version>2.3.6.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
+	<groupId>com.test</groupId>
 	<artifactId>movie-rent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>movie-rent</name>
 	<description>Spring boot project for a movie rental</description>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>14</java.version>
 	</properties>
 
 	<dependencies>
