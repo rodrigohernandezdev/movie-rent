@@ -113,12 +113,13 @@ public class MovieController {
     @PatchMapping("/{movieId}")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<?> updateAvailability(@PathVariable Long movieId,
-                                                @RequestBody Boolean availability)
+                                                @RequestParam Boolean availability)
             throws NotCreatedException {
         if (availability == null) {
             throw new ParameterException("Parameter {availability} can not be null");
         }
         movieService.updateAvailabilityById(movieId, availability);
+        logger.info("Value field availability was changed for movie: "+movieId );
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
