@@ -1,10 +1,7 @@
 package com.test.movierent.exception;
 
-import com.test.movierent.config.CorsFilter;
 import com.test.movierent.config.MessageProvider;
 import com.test.movierent.model.dto.ErrorDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +20,6 @@ import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class ControllerAdvisor extends ResponseEntityExceptionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(CorsFilter.class);
 
     @Autowired
     MessageProvider messageProvider;
@@ -55,20 +51,6 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         logger.error("An error has occurred to register a new user ", ex);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-
-    // Handler for general Exception
-    /*@ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDto> handleException(
-            Exception ex) {
-
-        ErrorDto error = new ErrorDto();
-        error.setTimestamp(LocalDateTime.now());
-        error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        error.setError(ex.getMessage());
-        error.setMessage(messageProvider.getErrorGeneral());
-
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }*/
 
     // Handler for custom ParameterException
     @ExceptionHandler(ParameterException.class)
@@ -118,7 +100,7 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
 
     // Handler for spring AccessDeniedException
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorDto> handleBadCredentialsException(
+    public ResponseEntity<ErrorDto> handleAccessDeniedException(
             AccessDeniedException ex) {
 
         ErrorDto error = new ErrorDto();
@@ -144,7 +126,7 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
 
     // Handler for custom UserMovieException
     @ExceptionHandler(UserMovieException.class)
-    public ResponseEntity<ErrorDto> handleNotExistException(
+    public ResponseEntity<ErrorDto> handleUserMovieException(
             UserMovieException ex) {
         ErrorDto error = new ErrorDto();
         error.setTimestamp(LocalDateTime.now());

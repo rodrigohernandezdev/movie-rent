@@ -1,6 +1,5 @@
 package com.test.movierent.dao;
 
-import com.test.movierent.model.Movie;
 import com.test.movierent.model.MovieUserRentBuy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
@@ -8,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
+@Repository(value = "movieRentBuyDao")
 public interface MovieUserRentBuyDao extends JpaRepository<MovieUserRentBuy, Long> {
 
     Long countByMovieId(Long movieId);

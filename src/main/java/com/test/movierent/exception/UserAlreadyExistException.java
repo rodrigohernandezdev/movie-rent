@@ -1,22 +1,19 @@
 package com.test.movierent.exception;
 
-import lombok.Data;
-
-import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *  Custom Exception Class for management registration if users exists
  **/
 
-@Data
+@Getter
+@Setter
 public class UserAlreadyExistException extends RuntimeException {
-    private String message;
+    private final String message;
 
     public UserAlreadyExistException(String message){
         this.message = message;
     }
-    @Override
-    public int hashCode() {
-        return Objects.hash(message);
-    }
+
 }

@@ -1,22 +1,18 @@
 package com.test.movierent.exception;
 
-import lombok.Data;
-
-import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Custom Exception Class when can not be created
  **/
 
-@Data
+@Getter
+@Setter
 public class NotCreatedException extends RuntimeException {
-    private String message;
+    private final String message;
 
     public NotCreatedException(String message) {
         this.message = message;
-    }
-    @Override
-    public int hashCode() {
-        return Objects.hash(message);
     }
 }

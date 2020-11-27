@@ -1,22 +1,18 @@
 package com.test.movierent.exception;
 
-import lombok.Data;
-
-import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Custom Exception Class for problems with the token used in registration or recovery
  **/
 
-@Data
+@Getter
+@Setter
 public class TokenException extends RuntimeException {
-    private String message;
-    private Integer type;
+    private final String message;
+    private final Integer type;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(message);
-    }
 
     public TokenException(String message, Integer type) {
         this.message = message;

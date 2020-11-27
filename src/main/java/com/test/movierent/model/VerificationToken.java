@@ -1,6 +1,7 @@
 package com.test.movierent.model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +16,8 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class VerificationToken {
     private static final int EXPIRATION = 60 * 24;
@@ -48,7 +50,9 @@ public class VerificationToken {
         this.type = type;
     }
 
+    // Empty Constructor
     public VerificationToken() {
+        // Empty Constructor
     }
 
     private Date calculateExpiryDate() {

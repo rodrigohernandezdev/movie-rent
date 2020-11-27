@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository(value = "movieLikeDao")
 public interface MovieUserLikedDao extends JpaRepository<MovieUserLiked, Long> {
 
     Long countByMovieId(Long movieId);

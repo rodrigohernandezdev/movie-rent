@@ -3,6 +3,7 @@ package com.test.movierent.model.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.test.movierent.model.Movie;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

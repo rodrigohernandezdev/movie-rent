@@ -1,7 +1,7 @@
 package com.test.movierent.config;
 
-import com.test.movierent.model.dto.ErrorDto;
 import com.google.gson.Gson;
+import com.test.movierent.model.dto.ErrorDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;

@@ -26,5 +26,6 @@ public interface UserService {
 
     User getUserFromAuth();
     User save(User user);
+    Boolean emailExist(String email);
 
 }

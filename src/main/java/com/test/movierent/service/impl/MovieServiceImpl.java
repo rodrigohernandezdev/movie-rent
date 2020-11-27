@@ -15,12 +15,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-@Service
+@Service(value = "movieService")
 public class MovieServiceImpl implements MovieService {
 
     private static final Logger logger = LoggerFactory.getLogger(MovieServiceImpl.class);
     @Autowired
     private MovieDao movieDao;
+
     @Autowired
     private LogMovieDao logMovieDao;
 
@@ -50,7 +51,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public Boolean updateById(Long id, MovieDto movie) throws NotCreatedException {
+    public Boolean updateById(Long id, MovieDto movie) {
         Movie exist = movieDao.findById(id).orElse(null);
         if (exist == null){
             throw new NotCreatedException("Movie with id: " + id + " not exist");
@@ -62,14 +63,14 @@ public class MovieServiceImpl implements MovieService {
         try {
             movieDao.save(exist);
         }catch (Exception e){
-            logger.error("Error to update movie "+exist.getTittle());
+            logger.error("Error to update movie {} ", exist.getTittle());
             return false;
         }
         return true;
     }
 
     /**
-     * @param exist is the movie after update in the dabasase
+     * @param exist is the movie after update in the database
      **/
     private void saveLogMovie(Movie exist) {
         LogMovie logMovie = new LogMovie();
@@ -87,7 +88,7 @@ public class MovieServiceImpl implements MovieService {
 
     // Method for update just column availability of movie
     @Override
-    public Boolean updateAvailabilityById(Long id, Boolean availability) throws NotCreatedException {
+    public Boolean updateAvailabilityById(Long id, Boolean availability) {
         Movie exist = movieDao.findById(id).orElse(null);
         if (exist ==null){
             throw new NotCreatedException("Movie with id: " + id + " not exist");

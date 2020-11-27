@@ -10,8 +10,8 @@ import com.test.movierent.model.MovieUserRentBuy;
 import com.test.movierent.model.dto.MovieDto;
 import com.test.movierent.model.dto.MovieRentBuyResponse;
 import com.test.movierent.model.dto.MovieResponse;
-import com.test.movierent.service.UserMovieService;
 import com.test.movierent.service.MovieService;
+import com.test.movierent.service.UserMovieService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -51,7 +50,7 @@ public class MovieController {
 
 
     @Value("${application.default-page-size}")
-    private Integer DEFAULT_PAGE_SIZE;
+    private Integer defaultPageSize;
 
     @Autowired
     private UserMovieService userMovieService;
@@ -60,17 +59,17 @@ public class MovieController {
     private MessageProvider messageProvider;
 
     @Value("${application.default-days-rent-movie}")
-    private Integer DEFAULT_DAYS_RENT;
+    private Integer defaultDaysRent;
 
     @Value("${application.default-pay-late-return}")
-    private Double DEFAULT_PAY_LATE;
+    private Double defaultPayLate;
 
     /** Create a new Movie
      * @param movie contains image property, this must be byte array
      **/
     @PostMapping(value = "", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<?> createMovie(@RequestBody MovieDto movie) throws IOException {
+    public ResponseEntity<?> createMovie(@RequestBody MovieDto movie){
         if (movie.getTittle() == null){
             throw new ParameterException("{tittle} can not be null");
         }
@@ -87,8 +86,7 @@ public class MovieController {
     // Update movie by id
     @PutMapping("/{movieId}")
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<?> updateMovie(@PathVariable Long movieId, @RequestBody MovieDto movie)
-            throws NotCreatedException, ParameterException {
+    public ResponseEntity<?> updateMovie(@PathVariable Long movieId, @RequestBody MovieDto movie){
         if (movie.getTittle() == null){
             throw new ParameterException("{tittle} can not be null");
         }
@@ -101,8 +99,7 @@ public class MovieController {
 
     @DeleteMapping("/{movieId}")
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<?> deleteMovie(@PathVariable Long movieId)
-            throws NotCreatedException, ParameterException {
+    public ResponseEntity<?> deleteMovie(@PathVariable Long movieId){
         movieService.deleteById(movieId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -113,13 +110,12 @@ public class MovieController {
     @PatchMapping("/{movieId}")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<?> updateAvailability(@PathVariable Long movieId,
-                                                @RequestParam Boolean availability)
-            throws NotCreatedException {
+                                                @RequestParam Boolean availability) {
         if (availability == null) {
             throw new ParameterException("Parameter {availability} can not be null");
         }
         movieService.updateAvailabilityById(movieId, availability);
-        logger.info("Value field availability was changed for movie: "+movieId );
+        logger.info("Value field availability was changed for movie: {}",movieId );
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -133,7 +129,7 @@ public class MovieController {
                                                   @RequestParam(name = "page_size", required = false) Integer pageSize,
                                                   @RequestParam(name = "sort_fields", required = false, defaultValue = "tittle") String[] sortFields,
                                                   @RequestParam(name = "sort_order", required = false) String sortOrder){
-        pageSize = pageSize==null?DEFAULT_PAGE_SIZE:pageSize;
+        pageSize = pageSize==null? defaultPageSize :pageSize;
         int newPageNum = pageNum >= 1?pageNum-1:pageNum;
         Pageable pageable = PageRequest.of(newPageNum, pageSize, getSort(sortOrder, sortFields));
         Page<Movie> moviePage = movieService.findAllByAvailability(true, pageable);
@@ -153,7 +149,7 @@ public class MovieController {
                                          @RequestParam(name = "sort_order", required = false) String sortOrder,
                                          @RequestParam(name = "availability", required = false) Integer availability){
         Pageable pageable = PageRequest.of(pageNum >= 1?pageNum-1:pageNum,
-                pageSize==null?DEFAULT_PAGE_SIZE:pageSize,
+                pageSize==null? defaultPageSize :pageSize,
                 getSort(sortOrder, sortFields));
         Page<Movie> allMovies;
         if (availability == null){
@@ -173,7 +169,7 @@ public class MovieController {
         return new ResponseEntity<>(movie, HttpStatus.OK);
     }
 
-    // Like funcionality by username in security
+    // Like functionality by username in security
     @Secured({"ROLE_ADMIN", "ROLE_USER"})
     @PutMapping("/{movieID}/like")
     public ResponseEntity<?> likeMovie(@PathVariable("movieID") Long movieID){
@@ -187,7 +183,7 @@ public class MovieController {
     @PostMapping("/{movieID}/rent")
     public ResponseEntity<?> rentMovie(@PathVariable("movieID") Long movieID, @RequestParam(name = "quantity") Integer quantity){
         MovieUserRentBuy movieRent = userMovieService.rent(movieID, quantity);
-        logger.info("A movie was rent "+ movieRent.getMovie().getTittle() + " to time: " + movieRent.getRentDate());
+        logger.info("A movie was rent {} to time: {}", movieRent.getMovie().getTittle(), movieRent.getRentDate());
         MovieRentBuyResponse response = new MovieRentBuyResponse();
         BeanUtils.copyProperties(movieRent, response);
         response.setMessage(messageProvider.getWarningMovieRent());
@@ -202,13 +198,13 @@ public class MovieController {
         MovieRentBuyResponse response = new MovieRentBuyResponse();
         BeanUtils.copyProperties(movieReturn, response);
         response.setMessage("The movie was returned successfully");
-        if ( LocalDateTime.now().compareTo(movieReturn.getRentDate()) > DEFAULT_DAYS_RENT) {
-            movieReturn.setPayLateReturn(new BigDecimal(DEFAULT_PAY_LATE));
-            response.setPayLateReturn(new BigDecimal(DEFAULT_PAY_LATE));
+        if ( LocalDateTime.now().compareTo(movieReturn.getRentDate()) > defaultDaysRent) {
+            movieReturn.setPayLateReturn(BigDecimal.valueOf(defaultPayLate));
+            response.setPayLateReturn(BigDecimal.valueOf(defaultPayLate));
             response.setMessage("An payment was added for return late the movie");
         }
         userMovieService.returnMovie(movieReturn);
-        logger.info("A movie was returned "+ movieReturn.getMovie().getTittle() + " to time: " + LocalDateTime.now());
+        logger.info("A movie was returned {} to time: {}", movieReturn.getMovie().getTittle(), LocalDateTime.now());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -217,7 +213,7 @@ public class MovieController {
     @PostMapping("/{movieID}/buy")
     public ResponseEntity<?> buyMovie(@PathVariable("movieID") Long movieID, @RequestParam(name = "quantity")  Integer quantity){
         MovieUserRentBuy movieBuy = userMovieService.buy(movieID, quantity);
-        logger.info("A movie was buy "+ movieBuy.getMovie().getTittle() + " to time: " + movieBuy.getRentDate());
+        logger.info("A movie was buy {} to time: {}", movieBuy.getMovie().getTittle(), movieBuy.getRentDate());
         MovieRentBuyResponse response = new MovieRentBuyResponse();
         BeanUtils.copyProperties(movieBuy, response);
         response.setMessage(messageProvider.getMessageMovieBuy());

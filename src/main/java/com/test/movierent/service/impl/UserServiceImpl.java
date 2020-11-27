@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     /** Override this method from UserDetailsService.class for use the users in our db */
     @Transactional
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) {
         User user = userDao.findByEmail(email);
         if(user == null){
             throw new UsernameNotFoundException("Invalid email or password.");
@@ -102,13 +102,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         // Default disable the user for work with the confirmation email
         user.setEnabled(false);
 
-        // Add User role for default to the user
-        //user.addRole(roleDao.findByName("USER"));
         return userDao.save(user);
     }
 
     @Override
     public void saveRegisteredUser(User user, VerificationToken verificationToken) {
+        // Add User role for default to the user
         user.addRole(roleDao.findByName("USER"));
         userDao.save(user);
         tokenDao.save(verificationToken);
@@ -159,7 +158,8 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return userDao.save(user);
     }
 
-    private boolean emailExist(String email) {
+    @Override
+    public Boolean emailExist(String email) {
         return userDao.existsByEmail(email);
     }
 }

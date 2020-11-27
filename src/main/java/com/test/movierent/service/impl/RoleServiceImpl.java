@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Service(value = "roleService")
 public class RoleServiceImpl implements RoleService {
     @Autowired
     RoleDao roleDao;

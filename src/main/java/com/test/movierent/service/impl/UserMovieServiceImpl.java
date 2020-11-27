@@ -8,8 +8,8 @@ import com.test.movierent.model.Movie;
 import com.test.movierent.model.MovieUserLiked;
 import com.test.movierent.model.MovieUserRentBuy;
 import com.test.movierent.model.User;
-import com.test.movierent.service.UserMovieService;
 import com.test.movierent.service.MovieService;
+import com.test.movierent.service.UserMovieService;
 import com.test.movierent.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Service
+@Service(value = "userMovieService")
 public class UserMovieServiceImpl implements UserMovieService {
     @Autowired
     private MovieUserLikedDao movieLikeDao;
@@ -33,18 +33,19 @@ public class UserMovieServiceImpl implements UserMovieService {
     @Autowired
     private MovieUserRentBuyDao movieRentBuyDao;
 
+    private static final String canNotObtain = "Can not obtain the movie: ";
     /**
      * Method for like a movie with authentication of spring security context
      **/
     @Override
-    public void like(Long movieId) throws NotExistException {
+    public void like(Long movieId) {
         User user = userService.getUserFromAuth();
         if (user == null) {
             throw new NotExistException("Can not obtain the user for like movie");
         }
         Movie movie = movieService.findByMovieId(movieId);
         if (movie == null) {
-            throw new NotExistException("Can not obtain the movie: " + movieId);
+            throw new NotExistException(canNotObtain + movieId);
         }
         // Validate if exist a like of user and movie
         if (movieLikeDao.countByMovieIdAndUserId(movieId, user.getId()) <= 0) {
@@ -59,17 +60,17 @@ public class UserMovieServiceImpl implements UserMovieService {
     }
 
     /**
-     * Funcionality for rent any quantity of movies by a user authenticated
+     * Functionality for rent any quantity of movies by a user authenticated
      **/
     @Override
-    public MovieUserRentBuy rent(Long movieId, Integer quantity) throws UserMovieException {
+    public MovieUserRentBuy rent(Long movieId, Integer quantity) {
         User user = userService.getUserFromAuth();
         if (user == null) {
             throw new NotExistException("Can not obtain the user for rent movie");
         }
         Movie movie = movieService.findByMovieId(movieId);
         if (movie == null) {
-            throw new NotExistException("Can not obtain the movie: " + movieId + " for rent");
+            throw new NotExistException(canNotObtain + movieId + " for rent");
         }
         if (movie.getStock() < quantity) {
             throw new UserMovieException("The stock of movie " + movie.getTittle() + " is less than the quantity to rent", 1);
@@ -93,20 +94,20 @@ public class UserMovieServiceImpl implements UserMovieService {
     }
 
     /**
-     * Funcionality for buy any quantity of movies by a user authenticated
+     * Functionality for buy any quantity of movies by a user authenticated
      **/
     @Override
-    public MovieUserRentBuy buy(Long movieId, Integer quantity) throws UserMovieException {
+    public MovieUserRentBuy buy(Long movieId, Integer quantity) {
         User user = userService.getUserFromAuth();
         if (user == null) {
             throw new NotExistException("Can not obtain the user for buy movie");
         }
         Movie movie = movieService.findByMovieId(movieId);
         if (movie == null) {
-            throw new NotExistException("Can not obtain the movie: " + movieId + " for buy");
+            throw new NotExistException(canNotObtain+ + movieId + " for buy");
         }
         if (movie.getStock() < quantity) {
-            throw new UserMovieException("The stock of movie " + movie.getTittle() + " is less than the quantity to buy", 2);
+            throw new UserMovieException("The stock of movie: " + movie.getTittle() + " is less than the quantity to buy", 2);
         }
 
         MovieUserRentBuy movieBuy = new MovieUserRentBuy();
@@ -139,7 +140,7 @@ public class UserMovieServiceImpl implements UserMovieService {
     }
 
     /**
-     * Funcionality for return a movie
+     * Functionality for return a movie
      **/
     @Override
     public MovieUserRentBuy returnMovie(MovieUserRentBuy returnMovie) {

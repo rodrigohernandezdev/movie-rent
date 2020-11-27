@@ -5,10 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
+
 @Component
 @PropertySource("classpath:message.properties")
 @Getter
-public class MessageProvider {
+public class MessageProvider implements Serializable {
 
     @Value("${error.bad-credentials}")
     private String badCredentials;

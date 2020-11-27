@@ -5,16 +5,21 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Util Class for filter headers en responses
+ * */
+
 public class CorsFilter implements Filter {
 
+    // Empty constructor for create a bean
     public CorsFilter() {
+        //Empty constructor of class
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CorsFilter.class);
@@ -32,9 +37,4 @@ public class CorsFilter implements Filter {
 
         chain.doFilter(req, res);
     }
-
-    public void init(FilterConfig filterConfig) {}
-
-    public void destroy() {}
-
 }

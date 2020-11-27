@@ -8,9 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository(value = "movieDao")
 public interface MovieDao extends JpaRepository<Movie, Long> {
 
+    @NonNull
     Page<Movie> findAll(@NonNull Pageable pageable);
 
     Page<Movie> findAllByAvailability(Boolean availability, Pageable pageable);

@@ -1,10 +1,10 @@
 package com.test.movierent.controller;
 
+import com.test.movierent.exception.NotExistException;
 import com.test.movierent.model.Role;
 import com.test.movierent.model.User;
 import com.test.movierent.service.RoleService;
 import com.test.movierent.service.UserService;
-import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,34 +30,34 @@ public class UserController {
 
     @GetMapping("")
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<?> findAll() throws NotFoundException {
+    public ResponseEntity<?> findAll() {
         List<User> userList = userService.findAll();
         if (userList == null || userList.size() == 0){
-            throw new NotFoundException("No users are availables");
+            throw new NotExistException("No users are available");
         }
         return new ResponseEntity<>(userList, HttpStatus.OK);
     }
 
     @GetMapping("/{userId}")
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<?> findById(@PathVariable(name = "userId") Long userId ) throws NotFoundException {
+    public ResponseEntity<?> findById(@PathVariable(name = "userId") Long userId ) {
         User userDetail = userService.findById(userId);
         if (userDetail == null ){
-            throw new NotFoundException("User: "+ userId + " was not found");
+            throw new NotExistException("User: "+ userId + " was not found");
         }
         return new ResponseEntity<>(userDetail, HttpStatus.OK);
     }
 
     @PatchMapping("/{userId}")
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<?> updateRoleById(@PathVariable(name = "userId") Long userId, @RequestParam() String roleName) throws NotFoundException {
+    public ResponseEntity<?> updateRoleById(@PathVariable(name = "userId") Long userId, @RequestParam() String roleName) {
         User user = userService.findById(userId);
         if (user == null ){
-            throw new NotFoundException("User: "+ userId + " was not found");
+            throw new NotExistException("User: "+ userId + " was not found");
         }
         Role role = roleService.findByName(roleName);
         if (role == null ){
-            throw new NotFoundException("Role: "+ roleName + " was not found");
+            throw new NotExistException("Role: "+ roleName + " was not found");
         }
         user.addRole(role);
 

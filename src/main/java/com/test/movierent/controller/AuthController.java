@@ -1,9 +1,9 @@
 package com.test.movierent.controller;
 
 import com.test.movierent.config.TokenProvider;
+import com.test.movierent.exception.NotExistException;
 import com.test.movierent.exception.ParameterException;
 import com.test.movierent.exception.TokenException;
-import com.test.movierent.exception.UserAlreadyExistException;
 import com.test.movierent.model.User;
 import com.test.movierent.model.VerificationToken;
 import com.test.movierent.model.dto.OnVerificationUserEvent;
@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -58,10 +57,12 @@ public class AuthController {
     ApplicationEventPublisher eventPublisher;
 
     @Value("${application.password-length}")
-    private Integer PASSWORD_LENGTH;
+    private Integer passwordLength;
+
+    private final String keyResponse = "message";
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserDto loginUser) throws AuthenticationException {
+    public ResponseEntity<TokenDto> login(@RequestBody UserDto loginUser) {
         final Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginUser.getEmail(),
@@ -74,23 +75,20 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody UserDto userDto, HttpServletRequest request)
-            throws UserAlreadyExistException {
+    public ResponseEntity<Object> signup(@RequestBody UserDto userDto, HttpServletRequest request) {
 
-        if (userDto.getPassword().length() < this.PASSWORD_LENGTH) {
+        if (userDto.getPassword().length() < this.passwordLength) {
             throw new ParameterException("Password length can not be less than 8 characters");
         }
         User registered = userService.register(userDto);
         String appUrl = getUrlPath(request);
-        logger.info("url " + appUrl);
         eventPublisher.publishEvent(new OnVerificationUserEvent(registered, request.getLocale(), appUrl, 1));
-        logger.info("User: " + registered.getEmail() + " has been created");
+        logger.info("User: {} has been created", registered.getEmail());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token)
-            throws TokenException {
+    public ResponseEntity<Map<String, String>> confirmRegistration(@RequestParam("token") String token){
         VerificationToken verificationToken = userService.getVerificationToken(token);
         verifyToken(verificationToken);
         User user = verificationToken.getUser();
@@ -98,24 +96,22 @@ public class AuthController {
         verificationToken.setEnabled(false);
         userService.saveRegisteredUser(user, verificationToken);
         Map<String, String> result = new LinkedHashMap<>();
-        result.put("message", "User has been verified");
+        result.put(keyResponse, "User has been verified");
         return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
     }
 
 
     @PostMapping("/reset-request")
-    public ResponseEntity<?> recovery(@RequestBody UserDto userDto, HttpServletRequest request)
-            throws Exception {
+    public ResponseEntity<?> recovery(@RequestBody UserDto userDto, HttpServletRequest request) {
         User exist = userService.findOne(userDto.getEmail());
         if (exist == null) {
-            throw new Exception("User is not registered");
+            throw new NotExistException("User is not registered");
         }
         String appUrl = getUrlPath(request);
-        logger.info("url " + appUrl);
         eventPublisher.publishEvent(new OnVerificationUserEvent(exist, request.getLocale(), appUrl, 2));
         logger.info("Has send a link to reset password to email");
         Map<String, String> result = new LinkedHashMap<>();
-        result.put("message", "Please check your email at " + exist.getEmail() + " for a link to reset your password");
+        result.put(keyResponse, String.format("Please check your email at %s for a link to reset your password", exist.getEmail()));
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -134,6 +130,9 @@ public class AuthController {
         return "recovery";
     }
 
+    /**
+     * Recovery password from thymeleaf template {recovery}
+     **/
     @PostMapping("/recovery")
     public ResponseEntity<?> recoveryToken(
             HttpServletRequest request) {
@@ -158,7 +157,7 @@ public class AuthController {
         }
 
 
-        if (password.length() < this.PASSWORD_LENGTH) {
+        if (password.length() < this.passwordLength) {
             throw new ParameterException("Password length can not be less than 8 characters");
         }
 
@@ -171,7 +170,7 @@ public class AuthController {
         userService.saveRecoveryToken(recoveryToken, password);
 
         Map<String, String> result = new LinkedHashMap<>();
-        result.put("message", "The password has been changed successfully");
+        result.put(keyResponse, "The password has been changed successfully");
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -184,16 +183,17 @@ public class AuthController {
 
     // verify if token is enabled or not expired
     private void verifyToken(VerificationToken recoveryToken) {
+        String invalid = "Token is not valid";
         if (recoveryToken == null || !recoveryToken.getEnabled()) {
-            throw new TokenException("Token is not valid", 1);
+            throw new TokenException(invalid, 1);
         }
         Calendar cal = Calendar.getInstance();
         if ((recoveryToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            throw new TokenException("Token is not valid", 2);
+            throw new TokenException(invalid, 2);
         }
         User user = recoveryToken.getUser();
         if (user == null) {
-            throw new TokenException("Token is not valid", 3);
+            throw new TokenException(invalid, 3);
         }
     }
 
