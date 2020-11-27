@@ -39,9 +39,6 @@ You need the following tools to use the software and how to install them.
 * OpenJDK 14
 * Maven 3.+
 * Docker for deploy
-  ```sh
-  npm install npm@latest -g
-  ```
 
 ### Installation
 
