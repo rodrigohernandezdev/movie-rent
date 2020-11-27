@@ -9,8 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import java.math.BigDecimal;
 
@@ -25,8 +24,7 @@ public class LogMovie {
     @Column(name = "movies_log_id")
     private Long id;
 
-    @OneToOne(targetEntity = Movie.class, fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "movie_id")
+    @ManyToOne(fetch = FetchType.LAZY)
     private Movie movie;
 
     @Column(length = 100, nullable = false)

@@ -1,6 +1,7 @@
 package com.test.movierent.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.UniqueConstraint;
 import java.io.Serializable;
@@ -69,5 +71,10 @@ public class User implements Serializable {
         this.roles = new ArrayList<>();
         this.roles.add(role);
     }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("user")
+    @JsonIgnore
+    private List<MovieUserLiked> liked;
 
 }
