@@ -67,7 +67,7 @@ public class MovieController {
     /** Create a new Movie
      * @param movie contains image property, this must be byte array
      **/
-    @PostMapping(value = "", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     @Secured("ROLE_ADMIN")
     public ResponseEntity<?> createMovie(@RequestBody MovieDto movie){
         if (movie.getTittle() == null){

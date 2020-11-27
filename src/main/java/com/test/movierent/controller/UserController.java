@@ -28,7 +28,7 @@ public class UserController {
     @Autowired
     private RoleService roleService;
 
-    @GetMapping("")
+    @GetMapping("/")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<?> findAll() {
         List<User> userList = userService.findAll();
