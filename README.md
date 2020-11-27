@@ -70,7 +70,7 @@ You need the following tools to use the software and how to install them.
    ```sh
    schema-movie-rent-instructions.sql
    ```
-5. Review or create your owner admin users by default into  `src\main\resources\import.sql`
+5. Review or create your owner admin users by default into  `import.sql`
    ```sh
    IMPORTANT: The password for users must be a string encode with B-CRYPT, 
    You must have add password string before continue with the configurations.
