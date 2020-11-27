@@ -63,7 +63,7 @@ public class MovieServiceImpl implements MovieService {
         try {
             movieDao.save(exist);
         }catch (Exception e){
-            logger.error("Error to update movie {} ", exist.getTittle());
+            logger.error("Error to update movie {} ", exist.getTittle(), e);
             return false;
         }
         return true;
