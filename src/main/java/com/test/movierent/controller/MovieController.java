@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/movies")
@@ -72,6 +74,11 @@ public class MovieController {
     public ResponseEntity<?> createMovie(@RequestBody MovieDto movie){
         if (movie.getTittle() == null){
             throw new ParameterException("{tittle} can not be null");
+        }
+        if (movieService.findByNameMovie(movie.getTittle()) != null){
+            Map<String, String> result = new LinkedHashMap<>();
+            result.put("message", String.format("A movie with the name %s it is already exist", movie.getTittle()));
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
         Movie newMovie = new Movie();
         BeanUtils.copyProperties(movie, newMovie);
